@@ -1,7 +1,7 @@
 public class MapValue {
-    public static void getMin(Map<String,Integer> newMap){
+    public static void getMinMax(Map<String,Integer> newMap){
         FindValueMap find = new FindValueMap();
-        find.getMin(newMap);
-        System.debug('Min value:' + find.getMin(newMap));
+        System.debug('Min value: ' + find.getMin(newMap));
+        System.debug('Max value: ' + find.getMax(newMap));
     }
 }

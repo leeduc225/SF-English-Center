@@ -1,11 +1,14 @@
 public class BankTransfer extends Pay{
-    public String bankCode(){
-        return 'leeduc';
-    }
-    public Double method(){
-        Pay pay = new Pay();
-        pay.setAmount(10);
-        System.debug('check: ' + pay);
-        return pay.getAmount();
+    public String bankCode;
+    public void setBankCode(String bankCode){
+        this.bankCode = bankCode;
+    } 
+    
+    public String getBankCode(){   
+        return this.bankCode; 
+    } 
+
+    public override void notification(){
+        System.debug('Giao dịch thành công!');
     }
 }
