@@ -27,12 +27,12 @@
 	<types>
 		<members>*</members>
 		<name>ApexTestSuite</name>
-	</types>
+	</types>-->
 	<types>
 		<members>*</members>
 		<name>ApexTrigger</name>
 	</types>
-	<types>
+	<!--<types>
 		<members>*</members>
 		<name>AppMenu</name>
 	</types>
