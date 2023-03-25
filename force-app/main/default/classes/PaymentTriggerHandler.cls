@@ -25,7 +25,7 @@ public with sharing class PaymentTriggerHandler {
         this.preventStatusChange();
     }
     public void doAfterUpdate(){
-
+        this.countPaymentStatusDone();
     }
 
     // Tự động update Final Amount = Amount khi Status chuyển thành Done nếu Final Amount không được nhập dữ liệu
@@ -63,5 +63,19 @@ public with sharing class PaymentTriggerHandler {
                 }
             }
         insert listTask;
+    }
+
+    // Update field Number of Payment cua Account khi Payment chuyển sang trạng thái 'Done'.
+    private void countPaymentStatusDone() {
+        Set<Id> accIds = new Set<Id>();
+        for (Payment__c payOld : this.oldList) {
+            if ('Done'.equals(this.newMap.get(payOld.Id).Status__c) && !payOld.Status__c.equals(this.newMap.get(payOld.Id).Status__c)) {
+                accIds.add(payOld.Account__c);
+            }
+        }
+        if (accIds.size() > 0) {
+            UpdateFieldNumberOfPayment accqueue = new UpdateFieldNumberOfPayment(accIds);
+            ID jobID = System.enqueueJob(accqueue);
+        }
     }
 }
