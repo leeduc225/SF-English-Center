@@ -24,7 +24,7 @@ public class ContactTriggerHandler {
 
     }
     public void doAfterUpdate(){
-
+        this.updateContacWithUserId();
     }
     public void doBeforeDelete(){
 
@@ -36,7 +36,9 @@ public class ContactTriggerHandler {
     private void countContact(List<Contact> conList){
         Set<Id> accIds = new Set<Id>();
         for (Contact con : conList) {
-            accIds.add(con.AccountId);
+            if (!String.isEmpty(con.AccountId)) {
+                accIds.add(con.AccountId);
+            }
         }
         if (accIds.size() > 0) {
             countContactGroupByAccount(accIds);
@@ -57,6 +59,46 @@ public class ContactTriggerHandler {
 
         if (accs.size() > 0) {
             update accs;
+        }
+    }
+
+    public void updateContacWithUserId() {
+        Set<Id> contactIds = new Set<Id>();
+        for (Contact ct : this.newList) {
+            if (ct.userId__c != this.oldMap.get(ct.Id).userId__c) {
+                contactIds.add(ct.Id);
+            }
+        }
+        if (contactIds.size() > 0) {
+            updateContactByAPI(contactIds);
+        }
+    }
+
+    @future (callout=true)
+    public static void updateContactByAPI(Set<Id> contactIds) {
+        Http http = new Http();
+        HttpRequest request = new HttpRequest();
+        
+        List<Contact> contacts = [SELECT Id, Name, Email, Phone, Website__c, Username__c, Account.Name, userId__c, MailingStreet, MailingCity, MailingState, MailingPostalCode, MailingCountry FROM Contact WHERE Id IN :contactIds];
+        for(Contact ct : contacts){
+        String requestBody = '{"name":"' + ct.Name + '" , "email": "' + ct.Email + '" , ' +
+        '"phone":"' + ct.Phone +'",  "website":"' + ct.Website__c +'",  ' +
+        '"username":"' + ct.Username__c +'", "address": {"street": "' + ct.MailingStreet + '", "city" : "' + ct.MailingCity + '" , "zipcode" : "' + ct.MailingPostalCode + '" },  "company": { "name" :"' + ct.Account.name + '"}}'; 
+        
+        request.setEndpoint('https://jsonplaceholder.typicode.com/users/' + ct.userId__c);
+        request.setMethod('PATCH');
+        request.setHeader('Content-Type', 'application/json');
+        request.setBody(requestBody); 
+        
+        HTTPResponse response = http.send(request);
+            
+        if (response.getStatusCode() == 200) {
+           Map<String, Object> updatedContact = (Map<String, Object>) JSON.deserializeUntyped(response.getBody());
+           System.debug(updatedContact);
+        }
+        else {
+            System.debug('Error updating data: ' + response.getStatus());
+        }
         }
     }
 }

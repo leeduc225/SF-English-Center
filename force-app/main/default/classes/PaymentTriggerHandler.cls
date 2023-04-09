@@ -70,7 +70,9 @@ public with sharing class PaymentTriggerHandler {
         Set<Id> accIds = new Set<Id>();
         for (Payment__c payOld : this.oldList) {
             if ('Done'.equals(this.newMap.get(payOld.Id).Status__c) && !payOld.Status__c.equals(this.newMap.get(payOld.Id).Status__c)) {
-                accIds.add(payOld.Account__c);
+                if (!String.isEmpty(payOld.Account__c)) {
+                    accIds.add(payOld.Account__c);
+                }
             }
         }
         if (accIds.size() > 0) {
