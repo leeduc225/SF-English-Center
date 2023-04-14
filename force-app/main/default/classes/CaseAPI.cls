@@ -1,10 +1,18 @@
 @RestResource(urlMapping='/v1/Cases/*')
 global class CaseAPI {
+    // @HttpGet
+    // global static Case doGet() {
+    //     RestRequest req = RestContext.request;
+    //     String caseId = req.requestURI.substring(req.requestURI.lastIndexOf('/')+1);
+    //     Case result = [SELECT Id, CaseNumber, ContactEmail, TextCheck__c, Status FROM Case WHERE Id = :caseId];
+    //     return result;
+    // }
+
     @HttpGet
-    global static Case doGet() {
+    global static Case doGetCaseNumber() {
         RestRequest req = RestContext.request;
-        String caseId = req.requestURI.substring(req.requestURI.lastIndexOf('/')+1);
-        Case result = [SELECT Id, CaseNumber, ContactEmail, TextCheck__c, Status FROM Case WHERE Id = :caseId];
+        String caseNumber = req.params.get('caseNumber');
+        Case result = [SELECT Id, CaseNumber, ContactEmail, TextCheck__c, Status FROM Case WHERE CaseNumber = :caseNumber];
         return result;
     }
 

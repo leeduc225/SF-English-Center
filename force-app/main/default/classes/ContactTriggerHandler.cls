@@ -65,7 +65,7 @@ public class ContactTriggerHandler {
     public void updateContacWithUserId() {
         Set<Id> contactIds = new Set<Id>();
         for (Contact ct : this.newList) {
-            if (ct.userId__c != this.oldMap.get(ct.Id).userId__c) {
+            if (!String.isEmpty(String.valueOf(ct.userId__c)) && ct.userId__c != this.oldMap.get(ct.Id).userId__c) {
                 contactIds.add(ct.Id);
             }
         }
@@ -76,29 +76,27 @@ public class ContactTriggerHandler {
 
     @future (callout=true)
     public static void updateContactByAPI(Set<Id> contactIds) {
-        Http http = new Http();
-        HttpRequest request = new HttpRequest();
+        List<Contact> contactUpdates = new List<Contact>();
         
         List<Contact> contacts = [SELECT Id, Name, Email, Phone, Website__c, Username__c, Account.Name, userId__c, MailingStreet, MailingCity, MailingState, MailingPostalCode, MailingCountry FROM Contact WHERE Id IN :contactIds];
         for(Contact ct : contacts){
-        String requestBody = '{"name":"' + ct.Name + '" , "email": "' + ct.Email + '" , ' +
-        '"phone":"' + ct.Phone +'",  "website":"' + ct.Website__c +'",  ' +
-        '"username":"' + ct.Username__c +'", "address": {"street": "' + ct.MailingStreet + '", "city" : "' + ct.MailingCity + '" , "zipcode" : "' + ct.MailingPostalCode + '" },  "company": { "name" :"' + ct.Account.name + '"}}'; 
-        
-        request.setEndpoint('https://jsonplaceholder.typicode.com/users/' + ct.userId__c);
-        request.setMethod('PATCH');
-        request.setHeader('Content-Type', 'application/json');
-        request.setBody(requestBody); 
-        
-        HTTPResponse response = http.send(request);
-            
-        if (response.getStatusCode() == 200) {
-           Map<String, Object> updatedContact = (Map<String, Object>) JSON.deserializeUntyped(response.getBody());
-           System.debug(updatedContact);
+            HttpRequest request = new HttpRequest();
+            request.setEndpoint('https://jsonplaceholder.typicode.com/users/' + ct.userId__c);
+            request.setMethod('GET');
+            request.setHeader('Content-Type', 'application/json');
+            Http http = new Http();
+            HTTPResponse response = http.send(request);
+            UserWrapper user = (UserWrapper) JSON.deserialize(response.getBody(), UserWrapper.class);
+                
+            ct.LastName = user.name;
+            ct.MobilePhone = user.phone;
+            ct.Email = user.email;
+            ct.Username__c = user.username;
+            contactUpdates.add(ct);
         }
-        else {
-            System.debug('Error updating data: ' + response.getStatus());
-        }
+
+        if (contactUpdates.size() > 0) {
+            update contactUpdates;
         }
     }
 }
