@@ -31,4 +31,17 @@ public class CaseCalloutHttp {
         }
         return response;
     }
+
+    public static HttpResponse deleteCallout(String caseId ) {
+        Http http = new Http();
+        HttpRequest request = new HttpRequest();
+        request.setEndpoint('callout:SF_eng_org/services/apexrest/v1/Cases/' + caseId);
+        request.setMethod('DELETE');
+        HttpResponse response = http.send(request);
+        // If the request is successful, parse the JSON response.
+        if(response.getStatusCode() == 200) {
+            System.debug(caseId + ' deleted!');
+        }
+        return response;
+    }
 }
